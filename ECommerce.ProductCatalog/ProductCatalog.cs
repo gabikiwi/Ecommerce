@@ -1,9 +1,10 @@
-﻿    using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Fabric;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ECommerce.ProductCatalog.Model;
 using Microsoft.ServiceFabric.Data.Collections;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
@@ -15,6 +16,9 @@ namespace ECommerce.ProductCatalog
     /// </summary>
     internal sealed class ProductCatalog : StatefulService
     {
+
+        private IProductRepository _repo;
+
         public ProductCatalog(StatefulServiceContext context)
             : base(context)
         { }
@@ -38,31 +42,61 @@ namespace ECommerce.ProductCatalog
         /// <param name="cancellationToken">Canceled when Service Fabric needs to shut down this service replica.</param>
         protected override async Task RunAsync(CancellationToken cancellationToken)
         {
+
+            //@GC evry stateful service has StateManage defined on his based class 
+            _repo = new ServiceFabricProductRepository(this.StateManager);
+
+            var product1 = new Product
+            {
+                Id = Guid.NewGuid(),
+                Name = "Lenovo Monitor",
+                Description = "Computer Monitor",
+                Price = 500,
+                Availability = 100
+            };
+
+            var product2 = new Product
+            {
+                Id = Guid.NewGuid(),
+                Name = "Chromebook",
+                Description = "Laptop",
+                Price = 700,
+                Availability = 50
+            };
+
+            var product3 = new Product
+            {
+                Id = Guid.NewGuid(),
+                Name = "Backpack",
+                Description = "Accessories",
+                Price = 700,
+                Availability = 50
+            };
             // TODO: Replace the following sample code with your own logic 
             //       or remove this RunAsync override if it's not needed in your service.
 
-            var myDictionary = await this.StateManager.GetOrAddAsync<IReliableDictionary<string, long>>("myDictionary");
+            //var myDictionary = await this.StateManager.GetOrAddAsync<IReliableDictionary<string, long>>("myDictionary");
 
-            while (true)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
+            //while (true)
+            //{
+            //    cancellationToken.ThrowIfCancellationRequested();
 
-                using (var tx = this.StateManager.CreateTransaction())
-                {
-                    var result = await myDictionary.TryGetValueAsync(tx, "Counter");
+            //    using (var tx = this.StateManager.CreateTransaction())
+            //    {
+            //        var result = await myDictionary.TryGetValueAsync(tx, "Counter");
 
-                    ServiceEventSource.Current.ServiceMessage(this.Context, "Current Counter Value: {0}",
-                        result.HasValue ? result.Value.ToString() : "Value does not exist.");
+            //        ServiceEventSource.Current.ServiceMessage(this.Context, "Current Counter Value: {0}",
+            //            result.HasValue ? result.Value.ToString() : "Value does not exist.");
 
-                    await myDictionary.AddOrUpdateAsync(tx, "Counter", 0, (key, value) => ++value);
+            //        await myDictionary.AddOrUpdateAsync(tx, "Counter", 0, (key, value) => ++value);
 
-                    // If an exception is thrown before calling CommitAsync, the transaction aborts, all changes are 
-                    // discarded, and nothing is saved to the secondary replicas.
-                    await tx.CommitAsync();
-                }
+            //        // If an exception is thrown before calling CommitAsync, the transaction aborts, all changes are 
+            //        // discarded, and nothing is saved to the secondary replicas.
+            //        await tx.CommitAsync();
+            //    }
 
-                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
-            }
+            //    await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+            //}
         }
     }
 }
