@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ECommerce.ProductCatalog.Model;
 using Microsoft.ServiceFabric.Data.Collections;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
+using Microsoft.ServiceFabric.Services.Remoting.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
 
 namespace ECommerce.ProductCatalog
@@ -14,7 +15,7 @@ namespace ECommerce.ProductCatalog
     /// <summary>
     /// An instance of this class is created for each service replica by the Service Fabric runtime.
     /// </summary>
-    internal sealed class ProductCatalog : StatefulService
+    internal sealed class ProductCatalog : StatefulService, IProductCatalogService
     {
 
         private IProductRepository _repo;
@@ -22,6 +23,16 @@ namespace ECommerce.ProductCatalog
         public ProductCatalog(StatefulServiceContext context)
             : base(context)
         { }
+
+        public async Task AddProduct(Product product)
+        {
+            await _repo.AddProduct(product);
+        }
+
+        public async Task<IEnumerable<Product>> GetAllProducts()
+        {
+            return await _repo.GetAllProducts();
+        }
 
         /// <summary>
         /// Optional override to create listeners (e.g., HTTP, Service Remoting, WCF, etc.) for this service replica to handle client or user requests.
@@ -32,7 +43,9 @@ namespace ECommerce.ProductCatalog
         /// <returns>A collection of listeners.</returns>
         protected override IEnumerable<ServiceReplicaListener> CreateServiceReplicaListeners()
         {
-            return new ServiceReplicaListener[0];
+            // return new ServiceReplicaListener[0];
+            //return new[] { new ServiceReplicaListener(context => this.CreateServiceReplicaListeners(context)) };
+            return this.CreateServiceRemotingReplicaListeners();
         }
 
         /// <summary>
@@ -97,6 +110,16 @@ namespace ECommerce.ProductCatalog
 
             //    await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
             //}
+
+
+            await _repo.AddProduct(product1);
+            await _repo.AddProduct(product2);
+            await _repo.AddProduct(product3);
+
+            string valueString = "Before variable all";
+            Console.WriteLine(valueString);
+
+            IEnumerable<Product> all = await _repo.GetAllProducts();
         }
     }
 }
