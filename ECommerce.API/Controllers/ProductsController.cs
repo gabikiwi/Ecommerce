@@ -10,7 +10,8 @@ using Microsoft.ServiceFabric.Services.Client;
 
 namespace ECommerce.API.Controllers
 {
-    [Route("api/[controller]")]
+   // [Route("api/[controller]")]
+    [Route("api/products")]
     public class ProductsController : Controller
 
     {
@@ -27,6 +28,8 @@ namespace ECommerce.API.Controllers
         [HttpGet]
         public async Task<IEnumerable<ApiProduct>> Get()
         {
+
+
             IEnumerable<Product> allProducts = await _catalogService.GetAllProducts();
 
             return allProducts.Select(p => new ApiProduct
@@ -34,8 +37,8 @@ namespace ECommerce.API.Controllers
                 Id = p.Id,
                 Name = p.Name,
                 Description = p.Description,
-                Price = p.Price,
-                IsAvailable = p.Availability > 0
+                Price = p.Price
+               // IsAvailable = p.Availability > 0
             });
             
             // return new[] { new ApiProduct() { Id = Guid.NewGuid(), Description = "Fake" } };
