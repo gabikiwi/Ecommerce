@@ -11,7 +11,7 @@ using Microsoft.ServiceFabric.Services.Client;
 namespace ECommerce.API.Controllers
 {
     [Route("api/[controller]")]
-    public class ProductsController : ControllerBase
+    public class ProductsController : Controller
 
     {
         private readonly IProductCatalogService _catalogService;
